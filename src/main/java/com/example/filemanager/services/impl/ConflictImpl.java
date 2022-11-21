@@ -1,6 +1,7 @@
 package com.example.filemanager.services.impl;
 
 import com.example.filemanager.pojo.MergeScenario;
+import com.example.filemanager.pojo.fileInfoWithBLOBs;
 import com.example.filemanager.services.ConflictServices;
 import com.example.filemanager.utils.FileUtils;
 import com.example.filemanager.utils.GitUtils;
