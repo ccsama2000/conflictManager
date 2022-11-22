@@ -74,7 +74,13 @@ public class ConflictController {
         }
         return dataMap;
     }
-
+/**
+ * 2022-11-22
+ * @Param path:本地仓库路径
+ * @Param branch1:主分支名
+ * @Param branch2:需要合并的分支名
+ * 提取冲突，并将冲突文件存储到数据库中
+ */
     @PutMapping(value="/collectInfo")
     public Object updateUser(@RequestParam("path") String path,
                           @RequestParam("branch1") String branch1,
@@ -93,7 +99,11 @@ public class ConflictController {
         }
         return dataMap;
     }
-
+    /**
+     * 2022-11-22
+     * @Param fileName:需要提取的文件名
+     * 提取指定的文件及冲突内容
+     */
     @GetMapping(value="/specifiedFile")
     public Object getSpecifiedFile(@RequestParam("fileName") String fileName){
         Map<String, Object> dataMap = new HashMap<>();

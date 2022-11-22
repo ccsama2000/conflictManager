@@ -15,7 +15,7 @@ public class RestController {
 
     @GetMapping(value = "/getFile")
     public fileInfoWithBLOBs getUser(){
-        return fileInfoMapper.selectByPrimaryKey("file1");
+        return fileInfoMapper.selectByPrimaryKey("anotherFile.java");
     }
 
 
