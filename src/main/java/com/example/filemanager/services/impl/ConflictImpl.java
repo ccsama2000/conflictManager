@@ -100,14 +100,7 @@ public class ConflictImpl implements ConflictServices {
         ObjectId b2=git.getRepository().resolve(branch2);
         RevCommit commit1=gitUtils.getSpecificCommits(repository,b1);
         RevCommit commit2=gitUtils.getSpecificCommits(repository,b2);
-        Ref checkout = git.checkout().setName(branch1).call();
-        MergeResult merge = git.merge().
-                include(commit2).
-                setCommit(false).
-                setFastForward(MergeCommand.FastForwardMode.NO_FF).
-                //setSquash(false).
-                setMessage("Merged changes").
-                call();
+
         List<MergeScenario> scenarios1=getMergeInfo(commit1,commit2,repository,path);
         return scenarios1;
     }
