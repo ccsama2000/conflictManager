@@ -13,6 +13,12 @@ public class fileInfoWithBLOBs {
 
     private byte[] base;
 
+    public fileInfoWithBLOBs(String file,int issolve) {
+        this.filename=file;
+        this.issolve=issolve;
+    }
+    public fileInfoWithBLOBs() {}
+
     public void setFilename(String filename) {
         this.filename = filename == null ? null : filename.trim();
     }

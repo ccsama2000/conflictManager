@@ -22,4 +22,8 @@ public interface ConflictServices {
     public List<MergeScenario> getSpecifiedConflictInfo(String path,String branch1,String branch2) throws Exception;
 
     public List<MergeScenario> getMergeInfo(RevCommit commit1,RevCommit commit2, Repository repository,String path) throws Exception;
+
+    public int saveMergeInfo(String path,String branch1,String branch2) throws Exception;
+
+    public MergeScenario getSpecifiedFile(String fileName) throws Exception;
 }

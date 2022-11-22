@@ -3,8 +3,7 @@ package com.example.filemanager.controller;
 import com.example.filemanager.pojo.MergeScenario;
 import com.example.filemanager.services.ConflictServices;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -65,7 +64,44 @@ public class ConflictController {
             List<MergeScenario> mergeScenarios=conflictServices.getSpecifiedConflictInfo(path,branch1,branch2);
             dataMap.put("data", mergeScenarios);
             dataMap.put("code", 200);
-            dataMap.put("msg", "成功查询指定分支的冲突");
+            dataMap.put("msg", "成功收集冲突");
+        } catch (Exception e) {
+            e.printStackTrace();
+            dataMap.put("data", "");
+            dataMap.put("code", 500);
+            dataMap.put("root", "");
+            dataMap.put("msg", "查询失败");
+        }
+        return dataMap;
+    }
+
+    @PutMapping(value="/collectInfo")
+    public Object updateUser(@RequestParam("path") String path,
+                          @RequestParam("branch1") String branch1,
+                          @RequestParam("branch2") String branch2){
+        Map<String, Object> dataMap = new HashMap<>();
+        try {
+            conflictServices.saveMergeInfo(path, branch1, branch2);
+            dataMap.put("code", 200);
+            dataMap.put("msg", "成功收集冲突");
+        } catch (Exception e) {
+            e.printStackTrace();
+            dataMap.put("data", "");
+            dataMap.put("code", 500);
+            dataMap.put("root", "");
+            dataMap.put("msg", "查询失败");
+        }
+        return dataMap;
+    }
+
+    @GetMapping(value="/specifiedFile")
+    public Object getSpecifiedFile(@RequestParam("fileName") String fileName){
+        Map<String, Object> dataMap = new HashMap<>();
+        try {
+            MergeScenario mergeScenario=conflictServices.getSpecifiedFile(fileName);
+            dataMap.put("data", mergeScenario);
+            dataMap.put("code", 200);
+            dataMap.put("msg", "成功读取冲突");
         } catch (Exception e) {
             e.printStackTrace();
             dataMap.put("data", "");

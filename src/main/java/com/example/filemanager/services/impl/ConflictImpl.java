@@ -1,5 +1,6 @@
 package com.example.filemanager.services.impl;
 
+import com.example.filemanager.dao.fileInfoMapper;
 import com.example.filemanager.pojo.MergeScenario;
 import com.example.filemanager.pojo.fileInfoWithBLOBs;
 import com.example.filemanager.services.ConflictServices;
@@ -18,6 +19,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.merge.RecursiveMerger;
 import org.eclipse.jgit.merge.ThreeWayMerger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -27,6 +29,10 @@ import java.util.List;
 
 @Service
 public class ConflictImpl implements ConflictServices {
+
+    @Autowired
+    fileInfoMapper fileInfoMapper;
+
     @Override
     public byte[] getFileByCommitAndPath(String path, RevCommit commit, Repository repository) throws IOException {
         TreeWalk treeWalk = TreeWalk.forPath(repository, path, commit.getTree());
@@ -141,4 +147,64 @@ public class ConflictImpl implements ConflictServices {
         return scenarios;
     }
 
+    @Override
+    public int saveMergeInfo(String path,String branch1,String branch2) throws Exception {
+        GitUtils gitUtils=new GitUtils();
+        Repository repository=gitUtils.getRepository(path);
+        Git git=new Git(repository);
+        ObjectId b1=git.getRepository().resolve(branch1);
+        ObjectId b2=git.getRepository().resolve(branch2);
+        RevCommit commit1=gitUtils.getSpecificCommits(repository,b1);
+        RevCommit commit2=gitUtils.getSpecificCommits(repository,b2);
+        ThreeWayMerger merger = MergeStrategy.RECURSIVE.newMerger(repository, true);
+        List<MergeScenario> scenarios=new ArrayList<>();
+        PathUtils pathUtils=new PathUtils();
+        if(!merger.merge(commit1, commit2)){
+            RecursiveMerger rMerger = (RecursiveMerger)merger;
+            RevCommit base = (RevCommit) rMerger.getBaseCommitId();
+            rMerger.getMergeResults().forEach((file, result) -> {
+                if(file.endsWith(".java") && result.containsConflicts()) {
+                    fileInfoWithBLOBs fileInfo=new fileInfoWithBLOBs(file,1);
+                    try {
+                        if(getFileByCommitAndPath(file, commit1,repository)!=null){
+                            fileInfo.setOurs(getFileByCommitAndPath(file, commit1,repository));
+                        }
+                        if(getFileByCommitAndPath(file, commit2,repository)!=null){
+                            fileInfo.setTheirs(getFileByCommitAndPath(file, commit2,repository));
+                        }
+                        if(getFileByCommitAndPath(file, base,repository)!=null){
+                            fileInfo.setBase(getFileByCommitAndPath(file, base,repository));
+                        }
+                        fileInfo.setPath(pathUtils.getFileWithPathSegment(path,file));
+//                        File conflict=new File(scenario.absPath);
+//                        scenario.conflict=fileUtils.readFile(conflict);
+                        fileInfoMapper.insert(fileInfo);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+        }
+        return 1;
+    }
+
+    @Override
+    public MergeScenario getSpecifiedFile(String fileName) throws Exception {
+        MergeScenario mergeScenario=new MergeScenario(fileName);
+        FileUtils fileUtils=new FileUtils();
+        fileInfoWithBLOBs fileInfo=fileInfoMapper.selectByPrimaryKey(fileName);
+        if(fileInfo.getOurs()!=null) {
+            mergeScenario.ours = new String(fileInfo.getOurs());
+        }
+        if(fileInfo.getTheirs()!=null) {
+            mergeScenario.theirs = new String(fileInfo.getTheirs());
+        }
+        if(fileInfo.getBase()!=null) {
+            mergeScenario.base = new String(fileInfo.getBase());
+        }
+        //需要修改
+        File conflict=new File(fileInfo.getPath());
+        mergeScenario.conflict=fileUtils.readFile(conflict);
+        return mergeScenario;
+    }
 }
