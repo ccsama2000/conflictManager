@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Merge空间</title>
+<meta name="description" content="Merge空间" />
+<meta name="keywords" content="Merge空间" />
+<meta name="author" content="js代码" />
+<meta name="Copyright" content="js代码" />
+<link rel="stylesheet" th:href="@{login/css/style.css}">
+  <link rel="stylesheet" th:href="@{/res/layui/css/layui.css}">
+  <script th:src="@{/res/layui/layui.js}"></script>
+</head>
+<body>
+<body>
+<div class="cotn_principal" >
+  <div class="cont_centrar" style="margin-top: 80px">
+    <div class="cont_login">
+      <div class="cont_info_log_sign_up">
+        <div class="col_md_login">
+          <div class="cont_ba_opcitiy" style="margin-left: 31px">
+            <h2 style="font-family: 华文行楷" >登录</h2>
+            <p>已有账号，直接登录！</p>
+            <button class="btn_login" onclick="cambiar_login()">登录</button>
+          </div>
+        </div>
+        <div class="col_md_sign_up">
+          <div class="cont_ba_opcitiy" style="margin-left: 31px">
+            <h2 style="font-family: 华文行楷">注册</h2>
+            <p>还没有账号？免费注册！</p>
+            <button class="btn_sign_up" onclick="cambiar_sign_up()">注册</button>
+          </div>
+        </div>
+      </div>
+      <div class="cont_back_info">
+        <div class="cont_img_back_grey"> <img th:src="@{login/images/codeRain.png}" alt="" /> </div>
+      </div>
+      <div class="cont_forms" >
+        <div class="cont_img_back_"> <img th:src="@{login/images/codeRain.png}" alt="" /> </div>
+
+        <form id="loginForm" action="/userToLogin" method="post" >
+        <div class="cont_form_login"> <a href="#" onclick="ocultar_login_sign_up()" >X</a>
+          <h2 style="font-family: 华文行楷">Merge空间</h2>
+          <input type="text" placeholder="邮箱" name="email"/>
+          <input type="password" placeholder="密码" name="password"/>
+          <button class="btn_login" type="submit" >登录</button>
+        </div>
+        </form>
+
+        <form id="registerForm" action="/userRegister" method="post">
+        <div class="cont_form_sign_up"> <a href="#" onclick="ocultar_login_sign_up()">X</a>
+          <h2 style="font-family: 华文行楷">欢迎来到"Merge空间"，开启你的打工</h2>
+          <input type="text" placeholder="用户名" name="userName"/>
+          <input type="text" placeholder="邮箱" name="email"/>
+          <input type="password" placeholder="密码" name="password"/>
+          <button class="btn_sign_up" type="submit">注册</button>
+        </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+<script th:src="@{login/js/index.js}"></script>
+
+<script th:inline="javascript">
+    //用thymeleaf取到msg信息
+    var data = [[${msg}]];
+
+    //layer弹出层
+    layui.use('layer', function () { //独立版的layer无需执行这一句
+        var $ = layui.jquery, layer = layui.layer; //独立版的layer无需执行这一句
+
+        if (data == null) {//没有信息时
+            layer.msg('欢迎来到Merge空间！希望你在此<br>畅游无阻', {
+                time: 2000 //2s后自动关闭
+            });
+        } else {
+            //配置一个透明的询问框
+            layer.msg(data, {
+                time: 2000, //2s后自动关闭
+                btn: ['知道了'],
+                btnAlign: 'c' //按钮居中
+            });
+        }
+
+    });
+</script>
+<script>
+    layui.use([ 'layer', 'element', 'jquery'], function () {
+        var element = layui.element;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+
+
+
+
+    });
+</script>
+</body>
+</body>
+</html>
