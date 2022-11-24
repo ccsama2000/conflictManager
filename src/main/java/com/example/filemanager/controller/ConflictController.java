@@ -16,17 +16,17 @@ import java.util.Map;
 public class ConflictController {
     @Autowired
     ConflictServices conflictServices;
-/**
- * 2022-11-12
- 不使用，仅示范用
- * @Param path:本地仓库路径
- * @Return data:
- * mergeScenarios base,ours,theirs以string方式存储的文件内容，
- * conflict 以list<String>方式按行存储的冲突文件内容，
- * fileName 冲突文件名 ，
- * absPath 绝对路径，本地访问路径
- *
- */
+    /**
+     * 2022-11-12
+     不使用，仅示范用
+     * @Param path:本地仓库路径
+     * @Return data:
+     * mergeScenarios base,ours,theirs以string方式存储的文件内容，
+     * conflict 以list<String>方式按行存储的冲突文件内容，
+     * fileName 冲突文件名 ，
+     * absPath 绝对路径，本地访问路径
+     *
+     */
     @GetMapping(value="/conflicts")
     public Object getConflicts(@RequestParam("path") String path){
         Map<String, Object> dataMap = new HashMap<>();
@@ -44,6 +44,7 @@ public class ConflictController {
         }
         return dataMap;
     }
+
     /**
      * 2022-11-19
      * @Param path:本地仓库路径
