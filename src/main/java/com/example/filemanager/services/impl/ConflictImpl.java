@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -192,6 +194,7 @@ public class ConflictImpl implements ConflictServices {
     public MergeScenario getSpecifiedFile(String fileName) throws Exception {
         MergeScenario mergeScenario=new MergeScenario(fileName);
         FileUtils fileUtils=new FileUtils();
+        PathUtils pathUtils=new PathUtils();
         fileInfoWithBLOBs fileInfo=fileInfoMapper.selectByPrimaryKey(fileName);
         if(fileInfo.getOurs()!=null) {
             mergeScenario.ours = new String(fileInfo.getOurs());
@@ -203,8 +206,35 @@ public class ConflictImpl implements ConflictServices {
             mergeScenario.base = new String(fileInfo.getBase());
         }
         //需要修改
-        File conflict=new File(fileInfo.getPath());
-        mergeScenario.conflict=fileUtils.readFile(conflict);
+//        File conflict=new File(fileInfo.getPath());
+        Path tmpNoPrefix = Files.createTempDirectory(null);
+        String path =tmpNoPrefix.toString();
+
+
+        fileUtils.write(pathUtils.getFileWithPathSegment(path,"ours.java"),fileInfo.getOurs());
+        fileUtils.write(pathUtils.getFileWithPathSegment(path,"theirs.java"),fileInfo.getTheirs());
+        fileUtils.write(pathUtils.getFileWithPathSegment(path,"base.java"),fileInfo.getBase());
+        File ours=new File(path,"ours.java");
+        File theirs=new File(path,"theirs.java");
+        File base=new File(path,"base.java");
+        ProcessBuilder pb2 = new ProcessBuilder(
+                "git",
+                "merge-file",
+                "--diff3",
+                ours.getPath(),
+                base.getPath(),
+                theirs.getPath()
+        );
+        try {
+            pb2.start().waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        mergeScenario.conflict=fileUtils.readFile(ours);
+        //删除临时文件
+//        Files.delete(tmpNoPrefix);
+
+
         return mergeScenario;
     }
 }

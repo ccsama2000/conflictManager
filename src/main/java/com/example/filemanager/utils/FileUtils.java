@@ -1,9 +1,6 @@
 package com.example.filemanager.utils;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,5 +16,22 @@ public class FileUtils {
             codes.add(line);
         }
         return codes;
+    }
+
+    public void write(String path, byte[] bytes) throws Exception {
+
+        File file = new File(path);
+        if (file.exists()) {
+            if (!file.delete()) {
+                throw new Exception("file failed to be deleted");
+            }
+        }
+
+        FileOutputStream fos = new FileOutputStream(file);
+        if (bytes != null) {
+            fos.write(bytes, 0, bytes.length);
+        }
+        fos.flush();
+        fos.close();
     }
 }
