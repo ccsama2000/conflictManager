@@ -3,6 +3,7 @@ package com.example.filemanager.controller;
 import com.example.filemanager.services.fileServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -75,6 +76,24 @@ public class fileController {
             e.printStackTrace();
             dataMap.put("data","");
             dataMap.put("code",500);
+        }
+        return dataMap;
+    }
+
+    @PutMapping(value="/write2File")
+    public Object updateUser(@RequestParam("path") String path,
+                             @RequestParam("content") String content){
+        Map<String, Object> dataMap = new HashMap<>();
+        try {
+            fileService.write2ConflictFile(content,path);
+            dataMap.put("code", 200);
+            dataMap.put("msg", "成功写入冲突文件");
+        } catch (Exception e) {
+            e.printStackTrace();
+            dataMap.put("data", "");
+            dataMap.put("code", 500);
+            dataMap.put("root", "");
+            dataMap.put("msg", "写入失败");
         }
         return dataMap;
     }

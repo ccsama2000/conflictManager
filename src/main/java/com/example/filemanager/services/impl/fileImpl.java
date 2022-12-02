@@ -4,6 +4,8 @@ import com.example.filemanager.services.fileServices;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -81,4 +83,15 @@ public class fileImpl implements fileServices {
         return list;
     }
 
+    @Override
+    public void write2ConflictFile(String content, String path) {
+        PrintStream stream;
+        try {
+            stream=new PrintStream(path);//写入的文件path
+            stream.print(content);//写入的字符串
+            //在这之后应将冲突块写入数据库中待查找用，待修改
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 }
