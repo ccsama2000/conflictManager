@@ -1,6 +1,7 @@
 package com.example.filemanager.services;
 
 import com.example.filemanager.pojo.MergeScenario;
+import com.example.filemanager.pojo.MergeTuple;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -26,4 +27,6 @@ public interface ConflictServices {
     public int saveMergeInfo(String path,String branch1,String branch2) throws Exception;
 
     public MergeScenario getSpecifiedFile(String fileName) throws Exception;
+
+    public List<MergeTuple> extractTuple(List<String> conflict,List<String> resolve) throws Exception;
 }

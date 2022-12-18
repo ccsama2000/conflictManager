@@ -1,6 +1,13 @@
 package com.example.filemanager.services.impl;
 
+import com.example.filemanager.dao.SolveMapper;
+import com.example.filemanager.pojo.MergeScenario;
+import com.example.filemanager.pojo.MergeTuple;
+import com.example.filemanager.pojo.solved;
+import com.example.filemanager.services.ConflictServices;
 import com.example.filemanager.services.fileServices;
+import com.example.filemanager.utils.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -14,6 +21,10 @@ import java.util.Map;
 @Service
 public class fileImpl implements fileServices {
 
+    @Autowired
+    ConflictServices conflictServices;
+    @Autowired
+    SolveMapper solveMapper;
 /**
  * 遍历路径下的所有文件夹
  * @Param filePath 需要遍历的文件夹路径
@@ -84,14 +95,40 @@ public class fileImpl implements fileServices {
     }
 
     @Override
-    public void write2ConflictFile(String content, String path) {
+    public void write2ConflictFile(String content, String path,String fileName) {
         PrintStream stream;
+        FileUtils fileUtils=new FileUtils();
         try {
             stream=new PrintStream(path);//写入的文件path
             stream.print(content);//写入的字符串
             //在这之后应将冲突块写入数据库中待查找用，待修改
+            MergeScenario mergeScenario=conflictServices.getSpecifiedFile(fileName);
+            List<String> conflict=mergeScenario.conflict;
+            File res=new File(path);
+            List<String> resolve=fileUtils.readFile(res);
+            List<MergeTuple> tuples=conflictServices.extractTuple(conflict,resolve);
+            for (MergeTuple tuple:tuples) {
+                StringBuilder r = new StringBuilder();
+                StringBuilder c = new StringBuilder();
+                for (String line:tuple.resolve) {
+                    r.append(line).append("\n");
+                }
+                for (String line:tuple.ours) {
+                    c.append(line).append("\n");
+                }
+                for (String line:tuple.base) {
+                    c.append(line).append("\n");
+                }
+                for (String line:tuple.theirs) {
+                    c.append(line).append("\n");
+                }
+                solved solve=new solved(c.toString(),r.toString());
+                solveMapper.insert(solve);
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -82,10 +82,11 @@ public class fileController {
 
     @PutMapping(value="/write2File")
     public Object updateUser(@RequestParam("path") String path,
-                             @RequestParam("content") String content){
+                             @RequestParam("content") String content,
+                             @RequestParam("fileName") String fileName){
         Map<String, Object> dataMap = new HashMap<>();
         try {
-            fileService.write2ConflictFile(content,path);
+            fileService.write2ConflictFile(content,path,fileName);
             dataMap.put("code", 200);
             dataMap.put("msg", "成功写入冲突文件");
         } catch (Exception e) {

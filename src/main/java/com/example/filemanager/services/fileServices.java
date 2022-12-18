@@ -11,5 +11,5 @@ public interface fileServices {
 
     public  List<Object> getAllFiles(String directoryPath);
 
-    public void write2ConflictFile(String content,String path);
+    public void write2ConflictFile(String content,String path,String fileName);
 }

@@ -2,6 +2,7 @@ package com.example.filemanager.services.impl;
 
 import com.example.filemanager.dao.fileInfoMapper;
 import com.example.filemanager.pojo.MergeScenario;
+import com.example.filemanager.pojo.MergeTuple;
 import com.example.filemanager.pojo.fileInfoWithBLOBs;
 import com.example.filemanager.services.ConflictServices;
 import com.example.filemanager.utils.FileUtils;
@@ -237,4 +238,70 @@ public class ConflictImpl implements ConflictServices {
 
         return mergeScenario;
     }
+
+    @Override
+    public List<MergeTuple> extractTuple(List<String> conflict, List<String> resolve) throws Exception {
+        List<String> copy = new ArrayList<>();
+        List<MergeTuple> tupleList = new ArrayList<>();
+        FileUtils fileUtils=new FileUtils();
+        int lenO=0,lenB=0,lenT=0;
+        try {
+            for (int i = 0, cnt = 0; i < conflict.size(); ++i) {
+                //如果不是冲突块，则将这一行加入copy？然后继续，cnt++
+                if (!conflict.get(i).startsWith("<<<<<<")) {
+                    copy.add(conflict.get(i));
+                    cnt++;
+                    continue;
+                }
+                //如果是冲突块，则生成一个冲突块，mark为起始的行数（原文件）
+                MergeTuple tuple = new MergeTuple();
+                tuple.mark = cnt;
+                //j，k分别为标记？
+                int j = i, k = i;
+                try {
+                    while (!conflict.get(k).startsWith("||||||")) {
+                        k++;
+                    }
+                    //k表示ours中冲突结束的位置，j此时为冲突开始的位置
+                    tuple.startO=cnt+lenO;
+                    lenO+=k-j-1;
+                    tuple.endO=cnt+lenO;
+                    tuple.ours = fileUtils.getCodeSnippets(conflict, j, k);
+                    //j此时为下一个冲突，也就是base中冲突开始的位置
+                    j = k;
+                    while (!conflict.get(k).startsWith("======")) {
+                        k++;
+                    }
+                    tuple.startB=cnt+lenB;
+                    lenB+=k-j-1;
+                    tuple.endB=cnt+lenB;
+                    tuple.base = fileUtils.getCodeSnippets(conflict, j, k);
+
+                    j = k;
+                    while (!conflict.get(k).startsWith(">>>>>>")) {
+                        k++;
+                    }
+                    tuple.startT=cnt+lenT;
+                    lenT+=k-j-1;
+                    tuple.endT=cnt+lenT;
+                    tuple.theirs = fileUtils.getCodeSnippets(conflict, j, k);
+                } catch (IndexOutOfBoundsException e) {
+                }
+                //从k继续遍历
+                i = k;
+                tupleList.add(tuple);
+            }
+        } catch (IndexOutOfBoundsException e) {
+        }
+        int rec[]=fileUtils.alignLines(copy,resolve);
+        for(MergeTuple tuple : tupleList){
+            int mark = tuple.mark;
+
+            if(mark > 0 && mark < copy.size() && rec[mark - 1] != -1 && rec[mark] != -1){
+                tuple.resolve = resolve.subList(rec[mark - 1] + 1, rec[mark]);
+            }
+        }
+        return tupleList;
+    }
+
 }

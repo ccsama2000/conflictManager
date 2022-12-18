@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.filemanager.dao.SolveMapper">
+    <select id="searchResolved" parameterType="String" resultType="com.example.filemanager.pojo.solved">
+        select *,
+               MATCH(chunk)AGAINST(#{tuple}) AS score
+FROM solved
+ORDER BY score DESC
+    </select>
+
+    <insert id="insert" parameterType="com.example.filemanager.pojo.solved">
+        insert into solved() values (#{chunk},#{solve});
+    </insert>
+
+</mapper>
