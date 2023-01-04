@@ -10,19 +10,21 @@ public class MergeTuple {
     public List<String> base;
     public List<String> resolve;
 
+    public List<String> historyTruth;
     public String path;
 
-    public int startO;
-    public int endO;
-    public int startB;
-    public int endB;
-    public int startT;
-    public int endT;
+//    public int startO;
+//    public int endO;
+//    public int startB;
+//    public int endB;
+//    public int startT;
+//    public int endT;
     public MergeTuple(){
         this.ours = new ArrayList<>();
         this.theirs = new ArrayList<>();
         this.base = new ArrayList<>();
         this.resolve = new ArrayList<>();
+        this.historyTruth=new ArrayList<>();
     }
 
     public MergeTuple(String filePath) {

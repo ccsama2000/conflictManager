@@ -19,6 +19,8 @@ public class FileUtils {
         while ((line = reader.readLine()) != null) {
             codes.add(line);
         }
+        isr.close();
+        reader.close();
         return codes;
     }
 

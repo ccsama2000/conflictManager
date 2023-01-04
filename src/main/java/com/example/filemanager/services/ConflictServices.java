@@ -28,5 +28,6 @@ public interface ConflictServices {
 
     public MergeScenario getSpecifiedFile(String fileName) throws Exception;
 
-    public List<MergeTuple> extractTuple(List<String> conflict,List<String> resolve) throws Exception;
+    public List<MergeTuple> extractTuple(List<String> conflict,List<String> resolve,int isSolve) throws Exception;
+
 }

@@ -1,8 +1,10 @@
 package com.example.filemanager.services.impl;
 
 import com.example.filemanager.dao.SolveMapper;
+import com.example.filemanager.dao.fileInfoMapper;
 import com.example.filemanager.pojo.MergeScenario;
 import com.example.filemanager.pojo.MergeTuple;
+import com.example.filemanager.pojo.fileInfoWithBLOBs;
 import com.example.filemanager.pojo.solved;
 import com.example.filemanager.services.ConflictServices;
 import com.example.filemanager.services.fileServices;
@@ -25,6 +27,8 @@ public class fileImpl implements fileServices {
     ConflictServices conflictServices;
     @Autowired
     SolveMapper solveMapper;
+    @Autowired
+    fileInfoMapper infoMapper;
 /**
  * 遍历路径下的所有文件夹
  * @Param filePath 需要遍历的文件夹路径
@@ -101,12 +105,15 @@ public class fileImpl implements fileServices {
         try {
             stream=new PrintStream(path);//写入的文件path
             stream.print(content);//写入的字符串
+            fileInfoWithBLOBs infoWithBLOBs=infoMapper.selectByPrimaryKey(fileName);
+            infoWithBLOBs.setIssolve(0);
+            infoMapper.updateByPrimaryKeySelective(infoWithBLOBs);
             //在这之后应将冲突块写入数据库中待查找用，待修改
             MergeScenario mergeScenario=conflictServices.getSpecifiedFile(fileName);
             List<String> conflict=mergeScenario.conflict;
             File res=new File(path);
             List<String> resolve=fileUtils.readFile(res);
-            List<MergeTuple> tuples=conflictServices.extractTuple(conflict,resolve);
+            List<MergeTuple> tuples=conflictServices.extractTuple(conflict,resolve,1);
             for (MergeTuple tuple:tuples) {
                 StringBuilder r = new StringBuilder();
                 StringBuilder c = new StringBuilder();
@@ -122,8 +129,10 @@ public class fileImpl implements fileServices {
                 for (String line:tuple.theirs) {
                     c.append(line).append("\n");
                 }
-                solved solve=new solved(c.toString(),r.toString());
-                solveMapper.insert(solve);
+                if(tuple.resolve.size()>0) {
+                    solved solve = new solved(c.toString(), r.toString());
+                    solveMapper.insert(solve);
+                }
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

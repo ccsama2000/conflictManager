@@ -1,7 +1,9 @@
 package com.example.filemanager.controller;
 
 import com.example.filemanager.pojo.MergeScenario;
+import com.example.filemanager.pojo.MergeTuple;
 import com.example.filemanager.services.ConflictServices;
+import org.apache.ibatis.jdbc.Null;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
@@ -109,7 +111,9 @@ public class ConflictController {
         Map<String, Object> dataMap = new HashMap<>();
         try {
             MergeScenario mergeScenario=conflictServices.getSpecifiedFile(fileName);
+            List<MergeTuple> tuples=conflictServices.extractTuple(mergeScenario.conflict, null,0);
             dataMap.put("data", mergeScenario);
+            dataMap.put("info",tuples);
             dataMap.put("code", 200);
             dataMap.put("msg", "成功读取冲突");
         } catch (Exception e) {

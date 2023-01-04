@@ -1,9 +1,11 @@
 package com.example.filemanager.services.impl;
 
+import com.example.filemanager.dao.SolveMapper;
 import com.example.filemanager.dao.fileInfoMapper;
 import com.example.filemanager.pojo.MergeScenario;
 import com.example.filemanager.pojo.MergeTuple;
 import com.example.filemanager.pojo.fileInfoWithBLOBs;
+import com.example.filemanager.pojo.solved;
 import com.example.filemanager.services.ConflictServices;
 import com.example.filemanager.utils.FileUtils;
 import com.example.filemanager.utils.GitUtils;
@@ -35,6 +37,8 @@ public class ConflictImpl implements ConflictServices {
 
     @Autowired
     fileInfoMapper fileInfoMapper;
+    @Autowired
+    SolveMapper solveMapper;
 
     @Override
     public byte[] getFileByCommitAndPath(String path, RevCommit commit, Repository repository) throws IOException {
@@ -228,19 +232,24 @@ public class ConflictImpl implements ConflictServices {
         );
         try {
             pb2.start().waitFor();
+            pb2.start().destroy();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         mergeScenario.conflict=fileUtils.readFile(ours);
+        mergeScenario.absPath=fileInfo.getPath();
         //删除临时文件
 //        Files.delete(tmpNoPrefix);
-
+        org.apache.commons.io.FileUtils.deleteDirectory(new File(path));
 
         return mergeScenario;
     }
-
+/*
+在打开新冲突文件时，提取冲突文件中的冲突块，并查找相似的解决方案
+在解决冲突后写入文件，提取解决方案和冲突块，存入solve表中待下次查取
+ */
     @Override
-    public List<MergeTuple> extractTuple(List<String> conflict, List<String> resolve) throws Exception {
+    public List<MergeTuple> extractTuple(List<String> conflict, List<String> resolve,int isSolve) throws Exception {
         List<String> copy = new ArrayList<>();
         List<MergeTuple> tupleList = new ArrayList<>();
         FileUtils fileUtils=new FileUtils();
@@ -263,27 +272,27 @@ public class ConflictImpl implements ConflictServices {
                         k++;
                     }
                     //k表示ours中冲突结束的位置，j此时为冲突开始的位置
-                    tuple.startO=cnt+lenO;
-                    lenO+=k-j-1;
-                    tuple.endO=cnt+lenO;
+//                    tuple.startO=cnt+lenO;
+//                    lenO+=k-j-1;
+//                    tuple.endO=cnt+lenO-1;
                     tuple.ours = fileUtils.getCodeSnippets(conflict, j, k);
                     //j此时为下一个冲突，也就是base中冲突开始的位置
                     j = k;
                     while (!conflict.get(k).startsWith("======")) {
                         k++;
                     }
-                    tuple.startB=cnt+lenB;
-                    lenB+=k-j-1;
-                    tuple.endB=cnt+lenB;
+//                    tuple.startB=cnt+lenB;
+//                    lenB+=k-j-1;
+//                    tuple.endB=cnt+lenB-1;
                     tuple.base = fileUtils.getCodeSnippets(conflict, j, k);
 
                     j = k;
                     while (!conflict.get(k).startsWith(">>>>>>")) {
                         k++;
                     }
-                    tuple.startT=cnt+lenT;
-                    lenT+=k-j-1;
-                    tuple.endT=cnt+lenT;
+//                    tuple.startT=cnt+lenT;
+//                    lenT+=k-j-1;
+//                    tuple.endT=cnt+lenT-1;
                     tuple.theirs = fileUtils.getCodeSnippets(conflict, j, k);
                 } catch (IndexOutOfBoundsException e) {
                 }
@@ -293,12 +302,32 @@ public class ConflictImpl implements ConflictServices {
             }
         } catch (IndexOutOfBoundsException e) {
         }
-        int rec[]=fileUtils.alignLines(copy,resolve);
-        for(MergeTuple tuple : tupleList){
-            int mark = tuple.mark;
+        if(isSolve==1) {
+            int rec[] = fileUtils.alignLines(copy, resolve);
+            for (MergeTuple tuple : tupleList) {
+                int mark = tuple.mark;
 
-            if(mark > 0 && mark < copy.size() && rec[mark - 1] != -1 && rec[mark] != -1){
-                tuple.resolve = resolve.subList(rec[mark - 1] + 1, rec[mark]);
+                if (mark > 0 && mark < copy.size() && rec[mark - 1] != -1 && rec[mark] != -1) {
+                    tuple.resolve = resolve.subList(rec[mark - 1] + 1, rec[mark]);
+                }
+            }
+        }
+        if(isSolve==0){
+            for (MergeTuple tuple : tupleList) {
+                StringBuilder c = new StringBuilder();
+                for (String line:tuple.ours) {
+                    c.append(line).append("\n");
+                }
+                for (String line:tuple.base) {
+                    c.append(line).append("\n");
+                }
+                for (String line:tuple.theirs) {
+                    c.append(line).append("\n");
+                }
+                List<solved> truths=solveMapper.searchResolved(c.toString());
+                for (solved truth:truths){
+                    tuple.historyTruth.add(truth.solve);
+                }
             }
         }
         return tupleList;

@@ -7,7 +7,7 @@
         select *,
                MATCH(chunk)AGAINST(#{tuple}) AS score
 FROM solved
-ORDER BY score DESC
+ORDER BY score DESC LIMIT 3
     </select>
 
     <insert id="insert" parameterType="com.example.filemanager.pojo.solved">
