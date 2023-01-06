@@ -102,9 +102,11 @@ public class ConflictController {
         return dataMap;
     }
     /**
-     * 2022-11-22
+     * 2023-1-6
      * @Param fileName:需要提取的文件名
      * 提取指定的文件及冲突内容
+     * 同时会提取指定冲突文件中的冲突块，并通过这些冲突块内容搜索已经解决的冲突解决方案，并提供参考
+     * tuples中的historyTruth为推荐的冲突解决方案，目前为3个
      */
     @GetMapping(value="/specifiedFile")
     public Object getSpecifiedFile(@RequestParam("fileName") String fileName){

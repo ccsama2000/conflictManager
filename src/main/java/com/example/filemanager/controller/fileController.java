@@ -79,7 +79,10 @@ public class fileController {
         }
         return dataMap;
     }
-
+/**
+ *2023-1-6
+ * 写入文件，同时根据冲突文件提取解决方案，存入数据库中待将来解决新冲突时查询
+ */
     @PutMapping(value="/write2File")
     public Object updateUser(@RequestParam("path") String path,
                              @RequestParam("content") String content,

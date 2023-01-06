@@ -108,7 +108,6 @@ public class fileImpl implements fileServices {
             fileInfoWithBLOBs infoWithBLOBs=infoMapper.selectByPrimaryKey(fileName);
             infoWithBLOBs.setIssolve(0);
             infoMapper.updateByPrimaryKeySelective(infoWithBLOBs);
-            //在这之后应将冲突块写入数据库中待查找用，待修改
             MergeScenario mergeScenario=conflictServices.getSpecifiedFile(fileName);
             List<String> conflict=mergeScenario.conflict;
             File res=new File(path);
